@@ -1,0 +1,40 @@
+services: # for SPT 3.10.4
+# for directions: https://github.com/zhliau/fika-spt-server-docker
+    fika_dedicated_server:
+        image: ghcr.io/zhliau/fika-spt-server-docker:latest
+        ports:
+        - 6969:6969
+        environment:
+        # Provide the uid/gid of the user, or it will default to 0 (root)
+        - UID=1000
+        - GID=1000
+        # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
+        # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
+        - INSTALL_FIKA=true
+        # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
+        - AUTO_UPDATE_SPT=true
+        # If you want the container to update Fika automatically if it detects the Fika server version does not match expected version, set this to true
+        - AUTO_UPDATE_FIKA=true
+        # If you don't want the container to change the file ownership of your server files, set this to false
+        - TAKE_OWNERSHIP=true
+        # If you don't want to automatically back up profiles, set this to false
+        - ENABLE_PROFILE_BACKUPS=true
+        # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
+        - LISTEN_ALL_NETWORKS=true
+        volumes:
+        # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
+        - /docker/fika-dedicated:/opt/server
+    
+    fika_dedicated_client:
+        image: ghcr.io/zhliau/fika-headless-docker:latest
+        container_name: fika_dedicated
+        volumes:
+        - /docker/appdata/fika/fika-server:/opt/tarkov
+        environment:
+        - PROFILE_ID=676385a70004e06ad82f7f9e
+        - SERVER_URL=100.116.221.64 # server tailscale ip
+        - SERVER_PORT=6969
+        # If you want to use modsync on this dedicated client
+        - USE_MODSYNC=false 
+        ports:
+            - 25565:25565/udp

@@ -1,0 +1,16 @@
+name: homepage
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    env_file: .env
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS}
+    ports:
+      - 3000:3000
+    volumes:
+      - ${HOMEPAGE_CONFIG}:/app/config # Make sure your local config directory exists
+    #  - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: unless-stopped

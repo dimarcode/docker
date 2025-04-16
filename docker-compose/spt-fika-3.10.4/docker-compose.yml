@@ -1,0 +1,41 @@
+services: # for SPT 3.10.4
+  fika-server:
+    image: ghcr.io/zhliau/fika-spt-server-docker:latest
+    env_file: .env
+    volumes:
+      # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
+      - ${FIKA_SERVER_DATA}:/opt/server # change to ${FIKA_SERVER_DATA_ARR} if on Servarr
+    environment:
+      # Provide the uid/gid of the user, or it will default to 0 (root)
+      - UID=${UID}
+      - GID=${GID}
+      # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
+      # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
+      - INSTALL_FIKA=true
+      # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
+      - AUTO_UPDATE_SPT=false
+      # If you want the container to update Fika automatically if it detects the Fika server version does not match expected version, set this to true
+      - AUTO_UPDATE_FIKA=false
+      # If you don't want the container to change the file ownership of your server files, set this to false
+      - TAKE_OWNERSHIP=true
+      # If you don't want to automatically back up profiles, set this to false
+      - ENABLE_PROFILE_BACKUPS=true
+      # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
+      - LISTEN_ALL_NETWORKS=true
+    ports:
+      - 6969:6969
+    
+
+  fika_dedicated:
+    image: ghcr.io/zhliau/fika-headless-docker:latest
+    container_name: fika_dedicated
+    env_file: .env
+    volumes:
+      - ${FIKA_DEDICATED_CLIENT_DATA}:/opt/tarkov  # change to ${FIKA_DEDICATED_CLIENT_DATA_ARR} if on Servarr
+    environment:
+      - PROFILE_ID=${PROFILE_ID}
+      - SERVER_URL=${FIKA_SERVER_URL}
+      - SERVER_PORT=6969
+      - USE_MODSYNC=false # If you want to use modsync on this dedicated client
+    ports:
+      - 25565:25565/udp
