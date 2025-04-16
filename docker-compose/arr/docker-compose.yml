@@ -160,7 +160,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/bazarr/config:/config
-      - /data/media:/data/media
+      - ${MEDIA_ROOT}/media:/data/media
     ports:
       - ${BAZARR_PORT}:6767
 
