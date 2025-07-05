@@ -35,24 +35,22 @@ services:
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
-      - ${REDISDATA}:/data
-    env_file: docker-compose.env
+      - ${HOME}/docker/appdata/paperless-ngx/redisdata:/data
     environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
+      PUID: 1000
+      PGID: 1000
 
   db:
     image: docker.io/library/postgres:16
     restart: unless-stopped
     volumes:
-      - ${POSTGRES_DATA}:/var/lib/postgresql/data
-    env_file: docker-compose.env
+      - ${HOME}/docker/appdata/paperless-ngx/pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PUID: ${PUID}
-      PGID: ${PGID}
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+      PUID: 1000
+      PGID: 1000
 
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
@@ -65,10 +63,10 @@ services:
     ports:
       - "8010:8000"
     volumes:
-      - ${PAPERLESS_DATA}:/usr/src/paperless/data
-      - ${PAPERLESS_MEDIA}:/usr/src/paperless/media
-      - ${PAPERLESS_EXPORT}:/usr/src/paperless/export
-      - ${PAPERLESS_CONSUME}:/usr/src/paperless/consume
+      - ${HOME}/docker/appdata/paperless-ngx/data:/usr/src/paperless/data
+      - ${HOME}/media/paperless-ngx:/usr/src/paperless/media
+      - ${HOME}/media/export:/usr/src/paperless/export
+      - ${HOME}/media/consume:/usr/src/paperless/consume
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://broker:6379
@@ -76,8 +74,8 @@ services:
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
-      PUID: ${PUID}
-      PGID: ${PGID}
+      PUID: 1000
+      PGID: 1000
 
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.7
