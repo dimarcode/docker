@@ -1,0 +1,21 @@
+services:
+  <app-name>-ts:
+    image: tailscale/tailscale:latest
+    hostname: <app-name>
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: true
+    volumes:
+      - ${HOME}/docker/appdata/<appdata-folder>/config:/config
+      - ${HOME}/docker/appdata/<appdata-folder>/ts-state:/var/lib/tailscale
+    restart: unless-stopped
+
+  <app-name>-app:
+    # ... define everything else here ...
+    image: ghcr.io/<app-name>-app/<appname>:${KARAKEEP_VERSION:-release}
+    container_name: <app-name>-app
+    restart: unless-stopped
+    network_mode: service:<app-name>-ts
+    volumes:
+      # etc...

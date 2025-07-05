@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    env_file: .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD} # set in .env
+    restart: always
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
