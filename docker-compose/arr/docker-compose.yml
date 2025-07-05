@@ -15,10 +15,10 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - ${QBITTORRENT_UI_PORT}:8080 # qbittorrent web interface
-      - ${QBITTORRENT_TORRENT_PORT}:6881 # qbittorrent torrent port
-      - ${NZBGET_PORT}:6789 # nzbget
-      - ${PROWLARR_PORT}:9696 # prowlarr
+      - 8080:8080 # qbittorrent web interface
+      - 6881:6881 # qbittorrent torrent port
+      - 6789:6789 # nzbget
+      - 9696:9696 # prowlarr
     volumes:
       - ${APPDATA}/servarr/gluetun:/gluetun
     environment:
@@ -62,8 +62,8 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - WEBUI_PORT=${QBITTORRENT_UI_PORT}
-      - TORRENTING_PORT=${QBITTORRENT_TORRENT_PORT}
+      - WEBUI_PORT=${WEBUI_PORT}
+      - TORRENTING_PORT=${TORRENTING_PORT}
     volumes:
       - ${APPDATA}/servarr/qbittorrent/config:/config
       - ${MEDIA_ROOT}:/data
@@ -117,7 +117,7 @@ services:
       - ${APPDATA}/servarr/sonarr/config:/config
       - ${MEDIA_ROOT}:/data
     ports:
-      - ${SONARR_PORT}:8989
+      - 8989:8989
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -132,7 +132,7 @@ services:
       - ${APPDATA}/servarr/radarr/config:/config
       - ${MEDIA_ROOT}:/data
     ports:
-      - ${RADARR_PORT}:7878
+      - 7878:7878
 
   lidarr:
     container_name: lidarr
@@ -147,7 +147,7 @@ services:
      - PGID=${PGID}
      - TZ=${TZ}
     ports:
-      - ${LIDARR_PORT}:8686
+      - 8686:8686
   
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
@@ -160,9 +160,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/bazarr/config:/config
-      - ${MEDIA_ROOT}/media:/data/media
+      - /data/media:/data/media
     ports:
-      - ${BAZARR_PORT}:6767
+      - 6767:6767
 
   readarr:
     image: lscr.io/linuxserver/readarr:develop
@@ -176,5 +176,16 @@ services:
       - ${APPDATA}/servarr/readarr/config:/config
       - ${MEDIA_ROOT}:/data
     ports:
-      - ${READARR_PORT}:8787
+      - 8787:8787
     restart: unless-stopped
+
+    # recyclarr:
+  #   image: ghcr.io/recyclarr/recyclarr
+  #   container_name: recyclarr
+  #   user: 1000:1000
+  #   volumes:
+  #     - ${APPDATA}/servarr/recyclarr/config:/config
+  #   environment:
+  #     - TZ=${TZ}
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}

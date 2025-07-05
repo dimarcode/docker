@@ -1,0 +1,89 @@
+# Example docker-compose file to get all required services running for an SPT server and dedicated client
+#
+# Change the volume mounts to point to the right paths, of course
+services:
+  # SPT Server container
+  
+  spt_server_3.11.3:
+    env_file:
+      - .env
+    # See https://github.com/zhliau/fika-spt-server-docker
+    # This is my own SPT server image, but you can choose to use any other working SPT docker image
+    image: ghcr.io/zhliau/fika-spt-server-docker:3.11.3
+    container_name: spt_server_3.11.3
+    volumes:
+      # I like to mount my server files from the host into the container so I can easily add/change mods
+      - ${APPDATA}/spt-3.11.3/server:/opt/server
+    environment:
+      # Provide the uid/gid of the user, or it will default to 0 (root)
+      - UID=1000
+      - GID=1000
+      # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
+      # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
+      - INSTALL_FIKA=false
+      # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
+      - AUTO_UPDATE_SPT=false
+      # If you want the container to update Fika automatically if it detects the Fika server version does not match expected version, set this to true
+      - AUTO_UPDATE_FIKA=false
+      # If you don't want the container to change the file ownership of your server files, set this to false
+      - TAKE_OWNERSHIP=false
+      # If you don't want to automatically back up profiles, set this to false
+      - ENABLE_PROFILE_BACKUPS=true
+      # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
+      - LISTEN_ALL_NETWORKS=false
+      # If you want to override the timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ codes
+      - TZ=US/Eastern
+      # Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer.
+      - NUM_HEADLESS_PROFILES=${NUM_HEADLESS_PROFILES} # set in .env file
+    ports:
+      - 6969:6969
+    # Mark the container as healthy once the server has started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:6969/launcher/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+ 
+  # Dedicated client container
+  fika_dedi_3.11.3:
+    env_file:
+      - .env
+    image: ghcr.io/zhliau/fika-headless-docker:v2.2.0
+    container_name: fika_dedi_3.11.3
+    volumes:
+      # Set this to the path on the host to the FIKA client files
+      - ${APPDATA}/spt-3.11.3/dedicated-client:/opt/tarkov
+    environment:
+      - PROFILE_ID=${DEDICATED_PROFILE_ID} # set in .env file
+      # Use service name from above, docker-compose resolves this to the SPT server container
+      - SERVER_URL=spt_server_3.11.3
+      - SERVER_PORT=6969
+    # Wait to start the dedicated client until the server is healthy
+    depends_on:
+      spt_server_3.11.3:
+        condition: service_healthy
+    ports:
+      - 25565:25565/udp
+
+  # Restarter service, to restart the dedicated client at 11 UTC every day
+  # Replace "fika_dedi" with the name of your dedicated client container
+  restarter_3.11.3:
+    env_file:
+      - .env
+    image: docker:cli
+    container_name: fika_restarter_3.11.3
+    restart: unless-stopped
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
+    entrypoint: ["/bin/sh","-c"]
+    command:
+      - |
+        echo "Scheduling restart - container start $$(date +'%Y%m%d %H:%M')"
+        while true; do
+        if [ "$$(date +'%H:%M')" = '11:00' ]; then
+        echo "Restarting dedicated container on $$(date +'%H:%M')"
+        docker restart fika_dedi_3.11.3
+        fi
+        sleep 60
+        done
