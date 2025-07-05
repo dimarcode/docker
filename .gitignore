@@ -11,6 +11,7 @@ stack.env
 
 immich-old
 spt-fika-3.9.8
+spt-fika-3.10.4
 *spt-potential
 
 *.py[cod]
