@@ -4,14 +4,17 @@ services:
     image: garethgeorge/backrest:latest
     container_name: backrest
     hostname: backrest
-    env_file: .env
+    env_file: 
+      - .env
     volumes:
       - ${BACKREST_LOCAL_DATA}:/data
       - ${BACKREST_LOCAL_CONFIG}:/config
       - ${BACKREST_LOCAL_CACHE}:/cache
-      - ${RCLONE_CONFIG}:/root/.config/rclone
-      # Backup directories below here. Example:
+      - ${RCLONE_CONFIG}:/root/.config/rclone  # if using rclone to mount remote storage, e.g. Dropbox, etc.
+      # Backup directories below here. Examples:
       - /path:/userdata/path
+      - /home/user:/userdata/home/user
+      # - etc...
   
     #  - /MY-REPOS:/repos # [optional] mount repos if using local storage, not necessary for remotes e.g. B2, S3, etc.
     environment:
