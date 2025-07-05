@@ -16,12 +16,13 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    env_file:
+      - .env
     volumes:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
+    
     ports:
       - '2283:2283'
     depends_on:
@@ -30,6 +31,7 @@ services:
     restart: always
     healthcheck:
       disable: false
+  
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -39,10 +41,18 @@ services:
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
-    volumes:
-      - ${ML_MODEL_CACHE}:/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
     env_file:
       - .env
+    volumes:
+      - model-cache:/cache
     restart: always
     healthcheck:
       disable: false
@@ -87,3 +97,6 @@ services:
       -c shared_buffers=512MB
       -c wal_compression=on
     restart: always
+
+volumes:
+  model-cache:
