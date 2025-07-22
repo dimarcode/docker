@@ -26,17 +26,17 @@ services:
     environment:
       MEILI_ADDR: http://karakeep-meilisearch:7700
       BROWSER_WEB_URL: http://karakeep-chrome:9222
-      NEXTAUTH_ULR: ${NEXTAUTH_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       CRAWLER_STORE_SCREENSHOT: true
       CRAWLER_FULL_PAGE_SCREENSHOT: true
       CRAWLER_ENABLE_ADBLOCKER: true
       # OPENAI_API_KEY: ...
-
       # You almost never want to change the value of the DATA_DIR variable.
       # If you want to mount a custom directory, change the volume mapping above instead.
       DATA_DIR: /data # DON'T CHANGE THIS
+  
   karakeep-chrome:
     image: gcr.io/zenika-hub/alpine-chrome:123
     container_name: karakeep-chrome
@@ -48,6 +48,7 @@ services:
       - --remote-debugging-address=0.0.0.0
       - --remote-debugging-port=9222
       - --hide-scrollbars
+  
   karakeep-meilisearch:
     image: getmeili/meilisearch:v1.13.3
     container_name: karakeep-meilisearch

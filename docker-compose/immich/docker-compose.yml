@@ -9,9 +9,22 @@
 name: immich
 
 services:
+
+  immich-ts:
+    image: tailscale/tailscale:latest
+    hostname: immich
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/immich.json
+      - TS_USERSPACE=true
+    volumes: 
+      - ${HOME}/docker/appdata/immich/tailscale/config:/config
+      - ${HOME}/docker/appdata/immich/tailscale/ts-state:/var/lib/tailscale
+    restart: unless-stopped
+
   immich-server:
     container_name: immich_server
-    hostname: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -22,12 +35,18 @@ services:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    
-    ports:
-      - '2283:2283'
+    network_mode: service:immich-ts
+    # ports:
+    #   - '2283:2283'
+    environment:
+      DB_HOSTNAME: immich-database
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: immich-redis
     depends_on:
-      - redis
-      - database
+      - immich-redis
+      - immich-database
     restart: always
     healthcheck:
       disable: false
@@ -57,14 +76,14 @@ services:
     healthcheck:
       disable: false
 
-  redis:
+  immich-redis:
     container_name: immich_redis
     image: docker.io/redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
 
-  database:
+  immich-database:
     container_name: immich_postgres
     hostname: immich_postgres
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
