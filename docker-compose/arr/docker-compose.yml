@@ -19,6 +19,11 @@ services:
       - 6881:6881 # qbittorrent torrent port
       - 6789:6789 # nzbget
       - 9696:9696 # prowlarr
+      - 7878:7878 # radarr
+      - 8989:8989 # sonarr
+      - 8686:8686 # lidarr
+      - 6767:6767 # bazarr
+      - 8787:8787 # readarr
     volumes:
       - ${APPDATA}/servarr/gluetun:/gluetun
     environment:
@@ -116,8 +121,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/sonarr/config:/config
       - ${MEDIA_ROOT}:/data
-    ports:
-      - 8989:8989
+    network_mode: service:gluetun
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -131,8 +135,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/radarr/config:/config
       - ${MEDIA_ROOT}:/data
-    ports:
-      - 7878:7878
+    network_mode: service:gluetun
 
   lidarr:
     container_name: lidarr
@@ -146,8 +149,7 @@ services:
      - PUID=${PUID}
      - PGID=${PGID}
      - TZ=${TZ}
-    ports:
-      - 8686:8686
+    network_mode: service:gluetun
   
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
@@ -161,12 +163,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/bazarr/config:/config
       - /data/media:/data/media
-    ports:
-      - 6767:6767
+    network_mode: service:gluetun
 
   readarr:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr
+    restart: unless-stopped
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -175,11 +177,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${APPDATA}/servarr/readarr/config:/config
       - ${MEDIA_ROOT}:/data
-    ports:
-      - 8787:8787
-    restart: unless-stopped
+    network_mode: service:gluetun
 
-    # recyclarr:
+  # recyclarr:
   #   image: ghcr.io/recyclarr/recyclarr
   #   container_name: recyclarr
   #   user: 1000:1000
