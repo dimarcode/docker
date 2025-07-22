@@ -4,16 +4,16 @@
 services:
   # SPT Server container
   
-  spt_server_3.11.3:
+  spt_server_3.9.8:
     env_file:
       - .env
     # See https://github.com/zhliau/fika-spt-server-docker
     # This is my own SPT server image, but you can choose to use any other working SPT docker image
-    image: ghcr.io/zhliau/fika-spt-server-docker:3.11.3
-    container_name: spt_server_3.11.3
+    image: ghcr.io/zhliau/fika-spt-server-docker:3.9.8
+    container_name: spt_server_3.9.8
     volumes:
       # I like to mount my server files from the host into the container so I can easily add/change mods
-      - ${HOME}/docker/appdata/spt-3.11.3/server:/opt/server
+      - ${HOME}/docker/appdata/spt-3.9.8/server:/opt/server
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000
@@ -32,9 +32,7 @@ services:
       # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
       - LISTEN_ALL_NETWORKS=false
       # If you want to override the timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ codes
-      - TZ=US/Eastern
-      # Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer.
-      - NUM_HEADLESS_PROFILES=1 # set in .env file
+      # - TZ=US/Eastern
     ports:
       - 6969:6969
     # Mark the container as healthy once the server has started
@@ -47,33 +45,33 @@ services:
     restart: unless-stopped
  
   # Dedicated client container
-  fika_dedi_3.11.3:
+  fika_dedi_3.9.8:
     env_file:
       - .env
-    image: ghcr.io/zhliau/fika-headless-docker:v2.2.0
-    container_name: fika_dedi_3.11.3
+    image: ghcr.io/zhliau/fika-headless-docker:v2.0.0
+    container_name: fika_dedi_3.9.8
     volumes:
       # Set this to the path on the host to the FIKA client files
-      - ${HOME}/docker/appdata/spt-3.11.3/dedicated-client:/opt/tarkov
+      - ${HOME}/docker/appdata/spt-3.9.8/dedicated-client:/opt/tarkov
     environment:
-      - PROFILE_ID=6815863167678f003100227e # change to match the profile id that was created
+      - PROFILE_ID=
       # Use service name from above, docker-compose resolves this to the SPT server container
-      - SERVER_URL=spt_server_3.11.3
+      - SERVER_URL=spt_server_3.9.8
       - SERVER_PORT=6969
     # Wait to start the dedicated client until the server is healthy
     depends_on:
-      spt_server_3.11.3:
+      spt_server_3.9.8:
         condition: service_healthy
     ports:
       - 25565:25565/udp
 
   # Restarter service, to restart the dedicated client at 11 UTC every day
   # Replace "fika_dedi" with the name of your dedicated client container
-  restarter_3.11.3:
+  restarter_3.9.8:
     env_file:
       - .env
     image: docker:cli
-    container_name: fika_restarter_3.11.3
+    container_name: fika_restarter_3.9.8
     restart: unless-stopped
     volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
     entrypoint: ["/bin/sh","-c"]
@@ -83,7 +81,7 @@ services:
         while true; do
         if [ "$$(date +'%H:%M')" = '11:00' ]; then
         echo "Restarting dedicated container on $$(date +'%H:%M')"
-        docker restart fika_dedi_3.11.3
+        docker restart fika_dedi_3.9.8
         fi
         sleep 60
         done

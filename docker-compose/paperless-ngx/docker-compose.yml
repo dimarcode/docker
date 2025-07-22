@@ -37,8 +37,8 @@ services:
     volumes:
       - ${HOME}/docker/appdata/paperless-ngx/redisdata:/data
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID}
+      PGID: ${PGID}
 
   db:
     image: docker.io/library/postgres:16
@@ -49,8 +49,8 @@ services:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
       POSTGRES_PASSWORD: paperless
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID}
+      PGID: ${PGID}
 
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
@@ -74,8 +74,8 @@ services:
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID}
+      PGID: ${PGID}
 
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.7
