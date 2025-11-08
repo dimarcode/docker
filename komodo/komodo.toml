@@ -7,9 +7,22 @@ enabled = true
 
 [[server]]
 name = "test-lxc"
+tags = ["testing"]
 [server.config]
 address = "https://test-lxc:8199"
 enabled = true
+
+##
+
+[[stack]]
+name = "test-mealie"
+[stack.config]
+server = "test-lxc"
+poll_for_updates = true
+git_account = "dimarcode"
+repo = "dimarcode/docker"
+run_directory = "docker-compose/mealie"
+file_paths = ["docker-compose.yaml"]
 
 ##
 
